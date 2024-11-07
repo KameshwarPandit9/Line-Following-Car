@@ -1,0 +1,75 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+#define LS A0
+#define RS A1
+#define EN_A 3 
+#define LM1 4
+#define LM2 5
+#define RM1 7
+#define RM2 8
+#define EN_B 6
+
+int speed = 140;
+
+void setup() {
+  Serial.begin(9600);
+  lcd.init(); 
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("  IOTRON 3.0");
+  pinMode(LS, INPUT);
+  pinMode(RS, INPUT);
+  pinMode(LM1, OUTPUT);
+  pinMode(LM2, OUTPUT);
+  pinMode(RM1, OUTPUT);
+  pinMode(RM2, OUTPUT);
+  pinMode(EN_A, OUTPUT);
+  pinMode(EN_B, OUTPUT);
+}
+
+void loop() {
+  lfr();
+}
+
+void lfr() {
+  bool leftSensor = analogRead(LS) < 500;
+  bool rightSensor = analogRead(RS) < 500;
+
+  if (leftSensor && rightSensor) {
+    digitalWrite(LM1, HIGH);
+    digitalWrite(LM2, LOW);
+    digitalWrite(RM1, HIGH);
+    digitalWrite(RM2, LOW);
+    analogWrite(EN_A, speed);
+    analogWrite(EN_B, speed);
+    Serial.println("Forward");
+  } 
+  else if (!leftSensor && rightSensor) {
+    digitalWrite(LM1, HIGH);
+    digitalWrite(LM2, LOW);
+    digitalWrite(RM1, LOW);
+    digitalWrite(RM2, LOW);
+    analogWrite(EN_A, speed);
+    analogWrite(EN_B, 0);
+    Serial.println("Turn Right");
+  } 
+  else if (leftSensor && !rightSensor) {
+    digitalWrite(LM1, LOW);
+    digitalWrite(LM2, LOW);
+    digitalWrite(RM1, HIGH);
+    digitalWrite(RM2, LOW);
+    analogWrite(EN_A, 0);
+    analogWrite(EN_B, speed);
+    Serial.println("Turn Left");
+  } 
+  else {
+    digitalWrite(LM1, LOW);
+    digitalWrite(LM2, LOW);
+    digitalWrite(RM1, LOW);
+    digitalWrite(RM2, LOW);
+    analogWrite(EN_A, 0);
+    analogWrite(EN_B, 0);
+    Serial.println("Stop");
+  }
+}
